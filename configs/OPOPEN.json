@@ -10,7 +10,7 @@
   "clang": "manifest",
   "tree": "mixed",
   "manifest_oos16": {
-    "url": "https://raw.githubusercontent.com/OnePlusOSS/kernel_manifest/oneplus/sm8550/oneplus_open_b.xml",
+    "url": "https://raw.githubusercontent.com/nnjzcio/Dragonw1nd-Kernels/refs/heads/main/oneplus_open_w.xml",
     "os": "OxygenOS 16",
     "os_short": "oos16"
   },
