@@ -8,7 +8,7 @@
   "vendor_boot_partition_size": "201326592",
   "qcacld_dev_name": "kiwi_v2",
   "clang": "manifest",
-  "tree": "mixed",
+  "tree": "common",
   "manifest_oos16": {
     "url": "https://raw.githubusercontent.com/nnjzcio/Dragonw1nd-Kernels/refs/heads/main/oneplus_open_w.xml",
     "os": "OxygenOS 16",
