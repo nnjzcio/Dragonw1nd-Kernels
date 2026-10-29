@@ -106,7 +106,8 @@ on:
           - POCO_X6
           - REDMI_15
           - REDMI_12
-        default: OP11
+          - OPOPEN
+        default: OPOPEN
 
 jobs:
   set-model:
