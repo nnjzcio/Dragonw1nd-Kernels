@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <remote fetch="https://github.com/OnePlusOSS" name="origin" />
+  <default remote="origin" sync-c="true" sync-tags="false" />
+  <project name="android_kernel_common_oneplus_sm8550"
+           path="kernel_platform/common"
+           revision="oneplus/sm8550_b_16.0.0_oneplus_open" />
+  <project name="android_kernel_modules_and_devicetree_oneplus_sm8550"
+           path="./"
+           revision="oneplus/sm8550_b_16.0.0_oneplus_open" />
+  <!-- Add the clang / build-tools projects if the CI expects them,
+       or let Dragonw1nd’s own toolchain setup handle them -->
+</manifest>
