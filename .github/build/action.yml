@@ -234,19 +234,16 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
-
         if [[ -f "${BUILD_CONFIG}" ]]; then
           echo "::debug:: Inheriting build config: ${BUILD_CONFIG}"
           set -a
             . ${BUILD_CONFIG}
           set +a
         fi
-
         function _line() {
           # printf '%*s\n' "$(tput cols)" '' | tr ' ' '='
           printf '%*s\n' "80" '' | tr ' ' '='
         }
-
         function _configs() {
           if [[ -v CONFIGS_GKI  && "${KERNEL_DIR}" == "common" ]]; then
             if [[ "${TREE}" == "monolithic" ]]; then
@@ -258,27 +255,22 @@ runs:
             echo "${CONFIGS_MSM[@]} modules.config"
           else
             local -a CONFIGS
-
             if [[ -z "${BASE_DEFCONFIG:-}" ]]; then
               CONFIGS=("gki_defconfig")
             else
               CONFIGS=("${BASE_DEFCONFIG}")
             fi
-
             if [[ -f "${ROOT_DIR}/${KERNEL_DIR}/arch/arm64/configs/vendor/${CODENAME}_GKI.config" ]]; then
               CONFIGS+=("vendor/${CODENAME}_GKI.config")
             elif [[ -f "${ROOT_DIR}/${KERNEL_DIR}/arch/arm64/configs/vendor/${SOC}_GKI.config" ]]; then
               CONFIGS+=("vendor/${SOC}_GKI.config")
             fi
-
             if [[ -f "${ROOT_DIR}/${KERNEL_DIR}/arch/arm64/configs/vendor/oplus/${SOC}_GKI.config" ]]; then
               CONFIGS+=("vendor/oplus/${SOC}_GKI.config")
             fi
-
             if [[ -f "${ROOT_DIR}/${KERNEL_DIR}/arch/arm64/configs/vendor/debugfs.config" ]]; then
               CONFIGS+=("vendor/debugfs.config")
             fi
-
             if [[ "${TREE}" == "monolithic" ]]; then
               CONFIGS+=( "kernel.config" "modules.config" )
             else
@@ -288,12 +280,9 @@ runs:
                 CONFIGS+=("modules.config")
               fi
             fi
-
             echo "${CONFIGS[@]}"
-
           fi
         }
-
         function set_localversion() {
           # LOCALVERSION branding
             if [[ -n "${CUSTOM_LOCALVERSION:-}" ]]; then
@@ -308,10 +297,8 @@ runs:
                 -e LOCALVERSION_AUTO
             fi
         }
-
         function set_lto() {
           echo "Modifying LTO mode to '${{ inputs.lto }}'"
-
           if [[ "${{ inputs.lto }}" == "none" ]]; then
             ${KERNEL_DIR}/scripts/config --file ${OUT}/.config \
               -d LTO_CLANG \
@@ -335,7 +322,6 @@ runs:
               -e LTO_CLANG_FULL \
               -d THINLTO
           fi
-
           # Optimize level config and flags
           if [[ "${{ inputs.optimize_level }}" == "O3" ]]; then
             ${KERNEL_DIR}/scripts/config --file ${OUT}/.config \
@@ -346,16 +332,12 @@ runs:
               -e CC_OPTIMIZE_FOR_PERFORMANCE \
               -d CC_OPTIMIZE_FOR_PERFORMANCE_O3
           fi
-
           ( cd ${OUT} && make "${MAKE_FLAGS[@]}" O="${OUT}" olddefconfig ) 
         }
-
-  
+    
         # end of utility functions
-
         cd "${ROOT_DIR}"
         export KERNEL_DIR="common"
-
         # Allow build.config to override MAKE_FLAGS
         if [[ ! -v MAKE_FLAGS ]]; then
           MAKE_FLAGS+=(
@@ -369,7 +351,6 @@ runs:
             CC="ccache clang"
           )
         fi
-
         MAKE_GOALS="Image Image.gz Image.lz4 modules"
         if [[ "${TREE}" == "monolithic" ]]; then
           MAKE_GOALS+=" dtbs"
@@ -380,54 +361,43 @@ runs:
         export DTB_TYPES="${MSM_ARCH}-overlays-"
         OUT="${OUT_DIR}/gki-kernel"
         MODULES_ARCHIVE=gki-modules.tar.gz
-
         _line
-
         if [[ -n "${PRE_DEFCONFIG_CMDS:-}" ]]; then
             echo -e "::debug:: Evaluating PRE_DEFCONFIG_CMDS inside $(pwd)"
             set -x
             eval "${PRE_DEFCONFIG_CMDS}"
             set +x
         fi
-
         SECONDS=0
         echo " Setting up for build"
         set -x
         ( cd "${KERNEL_DIR}" && make "${MAKE_FLAGS[@]}" O="${OUT}" $(_configs) )
         set +x
         _line
-
         set_localversion
-
         ( cd "${OUT}" && echo "gki_kernel_release=$(make "${MAKE_FLAGS[@]}" O="${OUT}" -s kernelrelease)" >> "${GITHUB_ENV}" )
-
         set -x
         set_lto
         set +x
         _line
-
         if [[ -n "${POST_DEFCONFIG_CMDS:-}" ]]; then
             echo -e "::debug:: Evaluating POST_DEFCONFIG_CMDS inside $(pwd)"
             set -x
             eval "${POST_DEFCONFIG_CMDS}"
             set +x
         fi
-
         echo " Building Kernel"
         set -x
         ( cd "${OUT}" && make "${MAKE_FLAGS[@]}" O="${OUT}" ${MAKE_GOALS} )
         set +x
         _line
-
         MAKE_GOALS="modules_install"
         MODULES_STAGING_DIR="${OUT_DIR}/gki-kernel/modules_staging"
-
         echo " Installing kernel modules to staging directory"
         set -x
         ( cd "${OUT}" && make "${MAKE_FLAGS[@]}" O="${OUT}" INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH="${MODULES_STAGING_DIR}" ${MAKE_GOALS} )
         set +x
         _line
-
         FILES=(
           arch/arm64/boot/Image
           arch/arm64/boot/Image.gz
@@ -438,7 +408,6 @@ runs:
           modules.builtin
           modules.builtin.modinfo
         )
-
         echo "Copying kernel artifacts to ${DIST_DIR}"
         for FILE in "${FILES[@]}"; do
           set -x
@@ -449,27 +418,22 @@ runs:
           fi
           set +x
         done
-
         _line
-
         if [[ "${TREE}" == "monolithic" ]]; then
           INSTALL_DTBS_PATH="${OUT_DIR}/gki-kernel/dtb_staging"
           MAKE_GOALS="dtbs_install"
-
           echo " Installing dtbs to staging directory"
           set -x
           ( cd "${OUT}" && make "${MAKE_FLAGS[@]}" O="${OUT}" INSTALL_DTBS_PATH="${INSTALL_DTBS_PATH}" DTB_TYPES="${DTB_TYPES}" ${MAKE_GOALS} )
           set +x
           _line
         else
-
           # Create gki modules archive
           ( 
             MODULES=$(find ${MODULES_STAGING_DIR} -type f -name "*.ko")
             echo " Archiving GKI modules to ${MODULES_ARCHIVE}"
             tar --transform="s,.*/,," -czf ${DIST_DIR}/${MODULES_ARCHIVE} ${MODULES[@]}
           )
-
           if [[ "${TREE}" == "mixed" ]]; then
             export KERNEL_DIR="msm-kernel"
           else
@@ -478,52 +442,40 @@ runs:
           OUT="${OUT_DIR}/${KERNEL_DIR}"
           MAKE_GOALS="modules dtbs"
           MAKE_FLAGS+=( KBUILD_MIXED_TREE="${DIST_DIR}" )
-
           if [[ -n "${PRE_DEFCONFIG_CMDS:-}" ]]; then
             echo -e "::debug:: Evaluating PRE_DEFCONFIG_CMDS inside $(pwd)"
             set -x
             eval "${PRE_DEFCONFIG_CMDS}"
             set +x
           fi
-
           echo " Setting up for build"
           set -x
           ( cd "${KERNEL_DIR}" && make "${MAKE_FLAGS[@]}" O="${OUT}" $(_configs) )
           set +x
           _line
-
           ( cd "${OUT}" && echo "msm_kernel_release=$(make "${MAKE_FLAGS[@]}" O="${OUT}" -s kernelrelease)" >> "${GITHUB_ENV}" )
-
           set_lto
           _line
-
           if [[ -n "${POST_DEFCONFIG_CMDS:-}" ]]; then
             echo -e "::debug:: Evaluating POST_DEFCONFIG_CMDS inside $(pwd)"
             set -x
             eval "${POST_DEFCONFIG_CMDS}"
             set +x
           fi
-
           echo " Building Kernel"
           set -x
           ( cd "${OUT}" && make "${MAKE_FLAGS[@]}" O="${OUT}" ${MAKE_GOALS} )
           set +x
           _line
-
           MAKE_GOALS="modules_install"
-          if [[ "${TREE}" == "mixed" ]]; then
-            MODULES_STAGING_DIR="${OUT_DIR}/msm-kernel/modules_staging"
-          else
-            MODULES_STAGING_DIR="${OUT_DIR}/common/modules_staging"
-          fi
+          MODULES_STAGING_DIR="${OUT_DIR}/${KERNEL_DIR}/modules_staging"
           echo " Installing kernel modules to staging directory"
           set -x
           ( cd "${OUT}" && make "${MAKE_FLAGS[@]}" O="${OUT}" INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH="${MODULES_STAGING_DIR}" ${MAKE_GOALS} )
           set +x
           _line
-
           MAKE_GOALS="dtbs_install"
-          INSTALL_DTBS_PATH="${OUT_DIR}/msm-kernel/dtb_staging"
+          INSTALL_DTBS_PATH="${OUT_DIR}/${KERNEL_DIR}/dtb_staging"
           
           echo " Installing dtbs to staging directory"
           set -x
@@ -531,28 +483,21 @@ runs:
           set +x
           _line
         fi
-
         # Rename file name since modules to be archived from now on are either full set of modules (monolithic tress) or devive-kernel modules
         MODULES_ARCHIVE=modules.tar.gz
-
         set -x
         echo " Copying dtbs and dtbos to DIST_DIR"
         cp $(find ${INSTALL_DTBS_PATH} -type f \( -name "*.dtb" -o -name "*.dtbo" \)) ${DIST_DIR} || true
         set +x
         _line
-
-
         # Exports for external kernel modules
         export BOARD_PLATFORM="${SOC}"
         export TARGET_BOARD_PLATFORM="${SOC}"
-
         MAKE_FLAGS+=(
           KERNEL_SRC="${ROOT_DIR}/${KERNEL_DIR}"
         )
-
         if [[ -f "${ROOT_DIR}/oplus/config/modules.ext.${KERNEL_VERSION}.oplus" ]]; then
           export OPLUS_ARCH_EXTENDS=y
-
           # OPLUS ext modules list
           EXT_OPLUS=($(cat "${ROOT_DIR}/oplus/config/modules.ext.${KERNEL_VERSION}.oplus"))
           if [[ "${SOC_VENDOR:-qcom}" == "qcom" ]]; then
@@ -561,7 +506,6 @@ runs:
               OPLUS_VND_BUILD_PLATFORM="${SOC}"
             )
           fi
-
           echo " Compiling vendor modules (oplus)"
           for EXT_MOD in "${EXT_OPLUS[@]}"; do
             if [[ ! -d "${ROOT_DIR}/${EXT_MOD}" ]]; then
@@ -571,17 +515,14 @@ runs:
             set -x
             #  The path that we pass in via the variable M needs to be a relative path relative to the kernel source directory
             EXT_MOD_REL=$(realpath -s --relative-to="${KERNEL_DIR}" "${ROOT_DIR}/${EXT_MOD}")
-
             # The object files will be stored here
             mkdir -p ${OUT}/${EXT_MOD_REL}
-
             make -C "${EXT_MOD}" M="${EXT_MOD_REL}" "${MAKE_FLAGS[@]}" O=${OUT} "${OPLUS_FLAGS[@]}"
             make -C "${EXT_MOD}" M="${EXT_MOD_REL}" "${MAKE_FLAGS[@]}" O=${OUT} "${OPLUS_FLAGS[@]}" INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH=${MODULES_STAGING_DIR} INSTALL_MOD_DIR="extra/${EXT_MOD}" modules_install
             set +x
           done
           _line
         fi
-
         
         if [[ ! -v EXT_MODULES && "${SOC_VENDOR:-qcom}" == "qcom" ]]; then
           EXT_MODULES+=(
@@ -615,43 +556,32 @@ runs:
             ../vendor/qcom/opensource/wlan/qcacld-3.0/.${QCACLD_DEV_NAME}
           )
         fi
-
         echo "EXT_MODULES=${EXT_OPLUS[*]} ${EXT_MODULES[*]}" >> "${GITHUB_ENV}"
-
         echo "Compiling vendor modules (qcom)"
-
         for EXT_MOD in "${EXT_MODULES[@]}"; do
             if [[ ! -d "${ROOT_DIR}/${EXT_MOD}" ]]; then
               echo "WARNING: The following module path does not exist : ${EXT_MOD}" >&2
               continue
             fi
             set -x
-
             #  The path that we pass in via the variable M needs to be a relative path relative to the kernel source directory
             EXT_MOD_REL=$(realpath -s --relative-to="${KERNEL_DIR}" "${ROOT_DIR}/${EXT_MOD}")
-
             # The object files will be stored here
             mkdir -p ${OUT}/${EXT_MOD_REL}
-
             make -C "${EXT_MOD}" M="${EXT_MOD_REL}" "${MAKE_FLAGS[@]}" O=${OUT}
             make -C "${EXT_MOD}" M="${EXT_MOD_REL}" "${MAKE_FLAGS[@]}" O=${OUT} INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH="${MODULES_STAGING_DIR}" INSTALL_MOD_DIR="extra/${EXT_MOD}" modules_install
             set +x
         done
         _line
-
         find "${MODULES_STAGING_DIR}" -name "${QCACLD_DEV_NAME}.ko" -execdir mv -f -- "{}" "qca_cld3_${QCACLD_DEV_NAME}.ko" \;
-
         # Create modules archive
         ( 
           MODULES=$(find ${MODULES_STAGING_DIR} -type f -name "*.ko")
           echo " Archiving GKI modules to ${MODULES_ARCHIVE}"
           tar --transform="s,.*/,," -czf ${DIST_DIR}/${MODULES_ARCHIVE} ${MODULES[@]}
         )
-
-
         if [[ "${SOC_VENDOR:-qcom}" == "qcom" ]]; then
           echo "Compiling vendor devicetree overlays"
-
           for PROJECT in $(cd "${ANDROID_BUILD_TOP}" && find -L vendor/ -maxdepth 4 -type d -name "*-devicetree"); do
             if [[ ! -e "../${PROJECT}/Makefile" ]]; then
               echo "${PROJECT} does not have expected build configuration files, skipping..."
@@ -663,7 +593,6 @@ runs:
           done
           _line
         fi
-
         echo "duration=${SECONDS}" >> "${GITHUB_OUTPUT}"
 
     - name: Cleanup old build cache
