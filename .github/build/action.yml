@@ -510,7 +510,7 @@ runs:
         MAKE_FLAGS+=(
           KERNEL_SRC="${ROOT_DIR}/${KERNEL_DIR}"
         )
-        if [[ -f "${ROOT_DIR}/oplus/config/modules.ext.${KERNEL_VERSION}.oplus" && "${SKIP_OPLUS_MODULES:-1}" != "1" ]]; then
+        if [[ -f "${ROOT_DIR}/oplus/config/modules.ext.${KERNEL_VERSION}.oplus" ]]; then
           export OPLUS_ARCH_EXTENDS=y
           # OPLUS ext modules list
           EXT_OPLUS=($(cat "${ROOT_DIR}/oplus/config/modules.ext.${KERNEL_VERSION}.oplus"))
