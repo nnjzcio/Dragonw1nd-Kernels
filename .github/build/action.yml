@@ -351,6 +351,9 @@ runs:
             CC="ccache clang"
           )
         fi
+        # Suppress Clang cast-function-type-mismatch for out-of-tree modules
+        export KCFLAGS="${KCFLAGS:-} -Wno-error=cast-function-type-mismatch -Wno-error=incompatible-function-pointer-types"
+
         MAKE_GOALS="Image Image.gz Image.lz4 modules"
         if [[ "${TREE}" == "monolithic" ]]; then
           MAKE_GOALS+=" dtbs"
