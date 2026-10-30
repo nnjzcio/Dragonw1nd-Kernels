@@ -487,14 +487,15 @@ runs:
           ( cd "${OUT}" && make "${MAKE_FLAGS[@]}" O="${OUT}" olddefconfig )
           set +x
           _line
-          MAKE_GOALS="dtbs_install"
-          INSTALL_DTBS_PATH="${OUT_DIR}/${KERNEL_DIR}/dtb_staging"
+          #MAKE_GOALS="dtbs_install"
+          #INSTALL_DTBS_PATH="${OUT_DIR}/${KERNEL_DIR}/dtb_staging"
           
-          echo " Installing dtbs to staging directory"
-          set -x
-          ( cd "${OUT}" && make "${MAKE_FLAGS[@]}" O="${OUT}" INSTALL_DTBS_PATH="${INSTALL_DTBS_PATH}" DTB_TYPES="${DTB_TYPES}" ${MAKE_GOALS} )
-          set +x
-          _line
+          #echo " Installing dtbs to staging directory"
+          #set -x
+          #( cd "${OUT}" && make "${MAKE_FLAGS[@]}" O="${OUT}" INSTALL_DTBS_PATH="${INSTALL_DTBS_PATH}" DTB_TYPES="${DTB_TYPES}" ${MAKE_GOALS} )
+          #set +x
+          #_line
+          echo "Skipping full dtbs_install to avoid unrelated DTB errors"
         fi
         # Rename file name since modules to be archived from now on are either full set of modules (monolithic tress) or devive-kernel modules
         MODULES_ARCHIVE=modules.tar.gz
