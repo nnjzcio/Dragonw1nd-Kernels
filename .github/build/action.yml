@@ -352,7 +352,7 @@ runs:
           )
         fi
         # Suppress Clang cast-function-type-mismatch for out-of-tree modules
-        export KCFLAGS="${KCFLAGS:-} -Wno-error=cast-function-type-mismatch -Wno-error=incompatible-function-pointer-types"
+        export KCFLAGS="${KCFLAGS:-} -Wno-error=cast-function-type-mismatch -Wno-error=incompatible-function-pointer-types -Wno-error=strict-prototypes"
 
         MAKE_GOALS="Image Image.gz Image.lz4 modules"
         if [[ "${TREE}" == "monolithic" ]]; then
