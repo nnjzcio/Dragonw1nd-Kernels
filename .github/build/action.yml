@@ -509,13 +509,13 @@ runs:
         MAKE_FLAGS+=(
           KERNEL_SRC="${ROOT_DIR}/${KERNEL_DIR}"
         )
-        if [[ -f "${ROOT_DIR}/oplus/config/modules.ext.${KERNEL_VERSION}.oplus" ]]; then
+        if [[ -f "${ROOT_DIR}/oplus/config/modules.ext.${KERNEL_VERSION}.oplus" && "${SKIP_OPLUS_MODULES:-1}" != "1" ]]; then
           export OPLUS_ARCH_EXTENDS=y
           # OPLUS ext modules list
           EXT_OPLUS=($(cat "${ROOT_DIR}/oplus/config/modules.ext.${KERNEL_VERSION}.oplus"))
 
           # Skip secureguard / rootguard modules that fail to build
-          EXT_OPLUS=($(printf '%s\n' "${EXT_OPLUS[@]}" | grep -v -E 'secureguard|rootguard|secure_common|oplus_secure' || true))
+          EXT_OPLUS=($(printf '%s\n' "${EXT_OPLUS[@]}" | grep -v -E 'secureguard|rootguard|secure_common|oplus_secure|oplus_wifi_wsa|oplus_connectivity_sla|wifismartantenna' || true))
           if [[ "${SOC_VENDOR:-qcom}" == "qcom" ]]; then
             OPLUS_FLAGS+=(
               CHIPSET_COMPANY=QCOM
