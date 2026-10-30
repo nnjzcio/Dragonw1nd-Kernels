@@ -471,7 +471,8 @@ runs:
           MODULES_STAGING_DIR="${OUT_DIR}/${KERNEL_DIR}/modules_staging"
 
           # Disable module signing for the second build phase
-          ./scripts/config --file "${OUT}/.config" -d MODULE_SIG -d MODULE_SIG_FORCE -d MODULE_SIG_ALL
+          "${ROOT_DIR}/${KERNEL_DIR}/scripts/config" --file "${OUT}/.config" \
+            -d MODULE_SIG -d MODULE_SIG_FORCE -d MODULE_SIG_ALL
           ( cd "${OUT}" && make "${MAKE_FLAGS[@]}" O="${OUT}" olddefconfig )
 
           echo " Installing kernel modules to staging directory"
