@@ -395,7 +395,11 @@ runs:
         MODULES_STAGING_DIR="${OUT_DIR}/gki-kernel/modules_staging"
         echo " Installing kernel modules to staging directory"
         set -x
-        ( cd "${OUT}" && make "${MAKE_FLAGS[@]}" O="${OUT}" INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH="${MODULES_STAGING_DIR}" ${MAKE_GOALS} )
+        ( cd "${OUT}" && make "${MAKE_FLAGS[@]}" O="${OUT}" \
+            INSTALL_MOD_STRIP=1 \
+            INSTALL_MOD_PATH="${MODULES_STAGING_DIR}" \
+            CONFIG_MODULE_SIG=n \
+            ${MAKE_GOALS} )
         set +x
         _line
         FILES=(
@@ -470,14 +474,14 @@ runs:
           MAKE_GOALS="modules_install"
           MODULES_STAGING_DIR="${OUT_DIR}/${KERNEL_DIR}/modules_staging"
 
-          # Disable module signing for the second build phase
+          # Force-disable module signing and reuse key if available
+          mkdir -p "${OUT}/certs"
+          cp -f "${OUT_DIR}/gki-kernel/certs/signing_key.pem" "${OUT}/certs/" 2>/dev/null || true
+          cp -f "${OUT_DIR}/gki-kernel/certs/signing_key.x509" "${OUT}/certs/" 2>/dev/null || true
+
           "${ROOT_DIR}/${KERNEL_DIR}/scripts/config" --file "${OUT}/.config" \
             -d MODULE_SIG -d MODULE_SIG_FORCE -d MODULE_SIG_ALL
           ( cd "${OUT}" && make "${MAKE_FLAGS[@]}" O="${OUT}" olddefconfig )
-
-          echo " Installing kernel modules to staging directory"
-          set -x
-          ( cd "${OUT}" && make "${MAKE_FLAGS[@]}" O="${OUT}" INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH="${MODULES_STAGING_DIR}" ${MAKE_GOALS} )
           set +x
           _line
           MAKE_GOALS="dtbs_install"
