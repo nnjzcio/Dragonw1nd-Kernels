@@ -572,6 +572,9 @@ runs:
             ../vendor/qcom/opensource/wlan/qcacld-3.0/.${QCACLD_DEV_NAME}
           )
         fi
+        # Skip mmrm-driver (missing headers)
+        EXT_MODULES=($(printf '%s\n' "${EXT_MODULES[@]}" | grep -v -E 'mmrm-driver' || true))
+        
         echo "EXT_MODULES=${EXT_OPLUS[*]} ${EXT_MODULES[*]}" >> "${GITHUB_ENV}"
         echo "Compiling vendor modules (qcom)"
         for EXT_MOD in "${EXT_MODULES[@]}"; do
