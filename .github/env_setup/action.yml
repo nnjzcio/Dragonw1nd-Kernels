@@ -79,7 +79,7 @@ runs:
         echo "::group::Install deps"
         sudo apt-get -o Acquire::Retries=3 update -qq
         sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-          git curl ca-certificates build-essential clang lld flex bison \
+          git curl ca-certificates build-essential clang lld flex bison llvm \
           libelf-dev libssl-dev libncurses-dev zlib1g-dev lz4 \
           libxml2-utils rsync unzip dwarves file python3 mkbootimg device-tree-compiler attr
         sudo apt-get clean
@@ -417,6 +417,15 @@ runs:
 
         echo "Clang detected ✅"
         echo "::endgroup::"
+
+    - name: Debug toolchain
+      shell: bash
+      run: |
+        echo "PATH=$PATH"
+        which clang || true
+        which llvm-ar || true
+        which llvm-objdump || true
+        ls -l "$(dirname $(which clang 2>/dev/null || echo /dev/null))" || true
 
     - name: Restore build cache
       uses: actions/cache/restore@v5
