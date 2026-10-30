@@ -574,7 +574,7 @@ runs:
           )
         fi
         # Skip mmrm-driver (missing headers)
-        EXT_MODULES=($(printf '%s\n' "${EXT_MODULES[@]}" | grep -v -E 'mmrm-driver|hw_fence|sync_fence|eva-kernel|msm_ext_display|securemsm-kernel|securemsm|ipa|datarmnet|dataipa|camera-kernel|explorer' || true))
+        EXT_MODULES=($(printf '%s\n' "${EXT_MODULES[@]}" | grep -v -E 'mmrm-driver|hw_fence|sync_fence|eva-kernel|msm_ext_display|securemsm-kernel|securemsm|ipa|datarmnet|dataipa|camera-kernel|explorer|video-driver' || true))
         
         echo "EXT_MODULES=${EXT_OPLUS[*]} ${EXT_MODULES[*]}" >> "${GITHUB_ENV}"
         echo "Compiling vendor modules (qcom)"
