@@ -470,8 +470,12 @@ runs:
             tar --transform="s,.*/,," -czf ${DIST_DIR}/${MODULES_ARCHIVE} ${MODULES[@]}
           )
 
-          export KERNEL_DIR="msm-kernel"
-          OUT="${OUT_DIR}/msm-kernel"
+          if [[ "${TREE}" == "mixed" ]]; then
+            export KERNEL_DIR="msm-kernel"
+          else
+            export KERNEL_DIR="common"
+          fi
+          OUT="${OUT_DIR}/${KERNEL_DIR}"
           MAKE_GOALS="modules dtbs"
           MAKE_FLAGS+=( KBUILD_MIXED_TREE="${DIST_DIR}" )
 
@@ -507,8 +511,11 @@ runs:
           _line
 
           MAKE_GOALS="modules_install"
-          MODULES_STAGING_DIR="${OUT_DIR}/msm-kernel/modules_staging"
-
+          if [[ "${TREE}" == "mixed" ]]; then
+            MODULES_STAGING_DIR="${OUT_DIR}/msm-kernel/modules_staging"
+          else
+            MODULES_STAGING_DIR="${OUT_DIR}/common/modules_staging"
+          fi
           echo " Installing kernel modules to staging directory"
           set -x
           ( cd "${OUT}" && make "${MAKE_FLAGS[@]}" O="${OUT}" INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH="${MODULES_STAGING_DIR}" ${MAKE_GOALS} )
