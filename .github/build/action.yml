@@ -513,6 +513,9 @@ runs:
           export OPLUS_ARCH_EXTENDS=y
           # OPLUS ext modules list
           EXT_OPLUS=($(cat "${ROOT_DIR}/oplus/config/modules.ext.${KERNEL_VERSION}.oplus"))
+
+          # Skip secureguard / rootguard modules that fail to build
+          EXT_OPLUS=($(printf '%s\n' "${EXT_OPLUS[@]}" | grep -v -E 'secureguard|rootguard' || true))
           if [[ "${SOC_VENDOR:-qcom}" == "qcom" ]]; then
             OPLUS_FLAGS+=(
               CHIPSET_COMPANY=QCOM
